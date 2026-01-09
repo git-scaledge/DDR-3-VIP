@@ -24,8 +24,11 @@
 //   - Configures virtual interface for UVM environment.
 //   - Dumps simulation waveforms to VCD file for debugging.
 //////////////////////////////////////////////////////////////////////////////////
-
 `include "ddr_defines.sv"
+
+`ifdef USE_QUESTA
+  `timescale 1ns/1ps
+`endif
 module ddr_tb_top;
 
   // Import UVM and DDR package
@@ -72,18 +75,19 @@ module ddr_tb_top;
     .odt(inf.odt)
   );
 
-	bind ddr_tb_top ddr_assertion asrt(.inf(inf));
+  bind ddr_tb_top ddr_assertion asrt(.inf(inf));
 
-  //////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////
   // Clock generation
-  // Generates ck_t and complementary ck_c signals with 10ns period
-  //////////////////////////////////////////////////////////////////////////
+  // Generates ck_t and complementary ck_c signals with 2.5ns period and 400MHz frequency
+  //////////////////////////////////////////////////////////////////////////////////////
+
   initial begin
     ck_t = 0;
     ck_c = 1;
     forever begin
       ck_c = ~ck_t;
-      #5 ck_t = ~ck_t;
+      #((`TIMEPERIOD)/2) ck_t = ~ck_t;
     end
   end
 
@@ -93,8 +97,8 @@ module ddr_tb_top;
   //////////////////////////////////////////////////////////////////////////
   initial begin
     reset_n = 1;
-    repeat(2) @(posedge ck_t) reset_n = 0;  // Assert reset
-    repeat(2) @(posedge ck_t) reset_n = 1;  // Deassert reset
+    #20ns reset_n = 0;  // Assert reset
+    #200us reset_n = 1;  // Deassert reset
   end
 
   //////////////////////////////////////////////////////////////////////////
@@ -108,7 +112,13 @@ module ddr_tb_top;
   end
 
   initial begin
+    $printtimescale();
+  end
+
+`ifndef USE_QUESTA
+  initial begin
     $fsdbDumpfile("wave.fsdb");
-		$fsdbDumpvars;
-	end
+    $fsdbDumpvars;
+  end
+`endif
 endmodule

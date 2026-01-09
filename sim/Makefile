@@ -19,14 +19,14 @@ UVM_CLI_SWITCH = +ntb_random_seed=$(SEED) +UVM_TESTNAME=$(TEST_NAME) +UVM_TIMEOU
 
 #Synopsis VCS OPTIONS 
 VCS_RUN_OPTS = -l $(TEST_NAME)/$(TEST_NAME)_$(SEED).log
-VCS_COMP_OPTS = -lca -sverilog -l compile.log -debug_access+all -ntb_opts uvm-1.2 $(INCL) $(BASE_PKG)
+VCS_COMP_OPTS = -lca -sverilog -l compile.log -debug_access+all -ntb_opts uvm-1.2 $(INCL) $(BASE_PKG) -timescale=1ns/1ps
 VCS_COVERAGE = -cm line+cond+fsm+tgl+branch
 VERDI_CMD   = verdi -sv -f filelist.f -ssf wave.fsdb &
 
 #Mentor QUESTA OPTIONS
 QUESTA_RUN_OPTS = -voptargs=+acc -work work ddr_tb_top -l $(TEST_NAME)/$(TEST_NAME)_$(SEED).log -c -do "do wave.do; run -all"
 QUESTA_RUN_WITH_GUI_OPTS = -voptargs=+acc -work work ddr_tb_top -l $(TEST_NAME)/$(TEST_NAME)_$(SEED).log -do "do wave.do; run -all"
-QUESTA_COMP_OPTS = +acc $(INCL) $(BASE_PKG)
+QUESTA_COMP_OPTS = +acc +define+USE_QUESTA $(INCL) $(BASE_PKG)
 QUESTA_COVERAGE = -coveropt 3 +cover
 
 #TOOL
@@ -80,41 +80,41 @@ all default: check clean comp run
 
 check:
 ifdef VCS_VERS_WARNING
-	@echo ""
-	@echo "VCS version is ${VCS_VERSION}"
-	@echo "WARNING: VCS version should be atleast E-2011.03 or greater"
-	@echo ""
+  @echo ""
+  @echo "VCS version is ${VCS_VERSION}"
+  @echo "WARNING: VCS version should be atleast E-2011.03 or greater"
+  @echo ""
 endif
 ifdef ERR_STATUS
-	@echo ""
-	@echo "ERROR : VCS_HOME is not set"
-	@echo "Please set VCS_HOME to run this Makefile"
-	@echo ""
+  @echo ""
+  @echo "ERROR : VCS_HOME is not set"
+  @echo "Please set VCS_HOME to run this Makefile"
+  @echo ""
 endif
 
 #Compilation Command 
 comp: check
-		 $(COMPILE_CMD)  \
-        	  $(RTL)
+     $(COMPILE_CMD)  \
+            $(RTL)
 
 #Run Command 
 run: comp
-	@echo "Compiling.................."
-	mkdir -p $(TEST_NAME) && $(RUN_CMD) \
-				$(UVM_CLI_SWITCH)
-	@echo "---------------------------------------------------------------------------------------------------------------"
-	@echo "LOG FILE PATH :- $(TEST_NAME)/$(TEST_NAME)_$(SEED).log"
-	@echo "---------------------------------------------------------------------------------------------------------------"
+  @echo "Compiling.................."
+  mkdir -p $(TEST_NAME) && $(RUN_CMD) \
+        $(UVM_CLI_SWITCH)
+  @echo "---------------------------------------------------------------------------------------------------------------"
+  @echo "LOG FILE PATH :- $(TEST_NAME)/$(TEST_NAME)_$(SEED).log"
+  @echo "---------------------------------------------------------------------------------------------------------------"
 
 #Run Command with gui
 run_gui: comp
-	@echo "Compiling.................."
-	mkdir -p $(TEST_NAME) && $(RUN_CMD_WITH_GUI) \
-				$(UVM_CLI_SWITCH)
+  @echo "Compiling.................."
+  mkdir -p $(TEST_NAME) && $(RUN_CMD_WITH_GUI) \
+        $(UVM_CLI_SWITCH)
 ifeq ($(TOOL),VCS)
-	@echo "Opening Verdi..."
-	$(VERDI_CMD)
+  @echo "Opening Verdi..."
+  $(VERDI_CMD)
 endif          
-	@echo "---------------------------------------------------------------------------------------------------------------"
-	@echo "LOG FILE PATH :- $(TEST_NAME)/$(TEST_NAME)_$(SEED).log"
-	@echo "---------------------------------------------------------------------------------------------------------------"
+  @echo "---------------------------------------------------------------------------------------------------------------"
+  @echo "LOG FILE PATH :- $(TEST_NAME)/$(TEST_NAME)_$(SEED).log"
+  @echo "---------------------------------------------------------------------------------------------------------------"

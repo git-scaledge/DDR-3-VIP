@@ -15,6 +15,7 @@
 // Notes:
 //////////////////////////////////////////////////////////////////////////////////
 
+`define TIMEPERIOD 2.5 //((1/(FREQUENCY))*(1000)) = (1/400)*1000 frq in MHZ 
 `define MEM_DQ_WIDTH 8
 `define MEM_BA_WIDTH 3
 `define MEM_ROW_WIDTH 13

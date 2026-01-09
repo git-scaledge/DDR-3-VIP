@@ -79,6 +79,7 @@ function void ddr_base_test::build_phase(uvm_phase phase);
   ddr_base_seq_h = ddr_base_sequence::type_id::create("ddr_base_seq");
 
   uvm_config_db#(ddr_config)::set(this, "*", "ddr_config_h", ddr_config_h);
+  ddr_config_h.randomize();
   `uvm_info(get_type_name(), "ending of build phase....", UVM_LOW)
 endfunction
     
@@ -101,7 +102,7 @@ task ddr_base_test::run_phase(uvm_phase phase);
   ddr_base_seq_h.start(ddr_env_h.ddr_agent_h.ddr_sequencer_h);
   
   phase.drop_objection(this);
-  phase.phase_done.set_drain_time(this, 20);
+  phase.phase_done.set_drain_time(this,500us );
   `uvm_info(get_type_name(), "ending of run phase....", UVM_LOW)
 endtask
 

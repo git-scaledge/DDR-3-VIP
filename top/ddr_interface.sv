@@ -21,6 +21,10 @@
 //     and monitor components.
 //////////////////////////////////////////////////////////////////////////////////
 
+`ifdef USE_QUESTA
+  `timescale 1ns/1ps
+`endif
+
 `ifndef DDR_INTERFACE_SV
 `define DDR_INTERFACE_SV
 
