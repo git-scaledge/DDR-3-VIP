@@ -80,41 +80,41 @@ all default: check clean comp run
 
 check:
 ifdef VCS_VERS_WARNING
-  @echo ""
-  @echo "VCS version is ${VCS_VERSION}"
-  @echo "WARNING: VCS version should be atleast E-2011.03 or greater"
-  @echo ""
+	@echo ""
+	@echo "VCS version is ${VCS_VERSION}"
+	@echo "WARNING: VCS version should be atleast E-2011.03 or greater"
+	@echo ""
 endif
 ifdef ERR_STATUS
-  @echo ""
-  @echo "ERROR : VCS_HOME is not set"
-  @echo "Please set VCS_HOME to run this Makefile"
-  @echo ""
+	@echo ""
+	@echo "ERROR : VCS_HOME is not set"
+	@echo "Please set VCS_HOME to run this Makefile"
+	@echo ""
 endif
 
 #Compilation Command 
 comp: check
-     $(COMPILE_CMD)  \
+		$(COMPILE_CMD)  \
             $(RTL)
 
 #Run Command 
 run: comp
-  @echo "Compiling.................."
-  mkdir -p $(TEST_NAME) && $(RUN_CMD) \
-        $(UVM_CLI_SWITCH)
-  @echo "---------------------------------------------------------------------------------------------------------------"
-  @echo "LOG FILE PATH :- $(TEST_NAME)/$(TEST_NAME)_$(SEED).log"
-  @echo "---------------------------------------------------------------------------------------------------------------"
+	@echo "Compiling.................."
+	mkdir -p $(TEST_NAME) && $(RUN_CMD) \
+				$(UVM_CLI_SWITCH)
+	@echo "---------------------------------------------------------------------------------------------------------------"
+	@echo "LOG FILE PATH :- $(TEST_NAME)/$(TEST_NAME)_$(SEED).log"
+	@echo "---------------------------------------------------------------------------------------------------------------"
 
 #Run Command with gui
 run_gui: comp
-  @echo "Compiling.................."
-  mkdir -p $(TEST_NAME) && $(RUN_CMD_WITH_GUI) \
+	@echo "Compiling.................."
+	mkdir -p $(TEST_NAME) && $(RUN_CMD_WITH_GUI) \
         $(UVM_CLI_SWITCH)
 ifeq ($(TOOL),VCS)
-  @echo "Opening Verdi..."
-  $(VERDI_CMD)
+	@echo "Opening Verdi..."
+	$(VERDI_CMD)
 endif          
-  @echo "---------------------------------------------------------------------------------------------------------------"
-  @echo "LOG FILE PATH :- $(TEST_NAME)/$(TEST_NAME)_$(SEED).log"
-  @echo "---------------------------------------------------------------------------------------------------------------"
+	@echo "---------------------------------------------------------------------------------------------------------------"
+	@echo "LOG FILE PATH :- $(TEST_NAME)/$(TEST_NAME)_$(SEED).log"
+	@echo "---------------------------------------------------------------------------------------------------------------"
