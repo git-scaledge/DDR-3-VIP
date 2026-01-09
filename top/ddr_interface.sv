@@ -56,6 +56,9 @@ interface ddr_interface(input logic ck_t, input logic reset_n);
   wire dqs_t;        // Data strobe true
   wire dqs_c;        // Data strobe complementary
 
+  //assign complement of ck_t to ck_c
+  assign ck_c = ~ck_t;
+
   //////////////////////////////////////////////////////////////////////////
   // Driver clocking block
   // Used by driver to drive outputs and sample inputs

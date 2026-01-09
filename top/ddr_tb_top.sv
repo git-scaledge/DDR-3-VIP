@@ -13,7 +13,7 @@
 // Description:
 //   Top-level module for DDR simulation. Instantiates the DDR interface,
 //   the DUT (DDR3 memory model), and sets up the clock, reset, and UVM test.
-//   Configures the DDR VIP environment and starts the base test.
+//   Configures the DDR environment and starts the base test.
 // Dependencies:
 //   - uvm_pkg
 //   - ddr_pkg
@@ -24,10 +24,10 @@
 //   - Configures virtual interface for UVM environment.
 //   - Dumps simulation waveforms to VCD file for debugging.
 //////////////////////////////////////////////////////////////////////////////////
-`include "ddr_defines.sv"
 
 `ifdef USE_QUESTA
   `timescale 1ns/1ps
+  `include "ddr_defines.sv"
 `endif
 module ddr_tb_top;
 
@@ -41,7 +41,7 @@ module ddr_tb_top;
   bit ck_c, ck_t, reset_n;
 
   //////////////////////////////////////////////////////////////////////////
-  // DDR interface instance connecting DUT and VIP components
+  // DDR interface instance connecting DUT and components
   //////////////////////////////////////////////////////////////////////////
   ddr_interface inf(.ck_t(ck_t), .reset_n(reset_n));
 
@@ -103,7 +103,7 @@ module ddr_tb_top;
 
   //////////////////////////////////////////////////////////////////////////
   // UVM test initialization
-  // - Configures virtual interface for DDR VIP environment
+  // - Configures virtual interface for DDR environment
   // - Runs the base test
   //////////////////////////////////////////////////////////////////////////
   initial begin

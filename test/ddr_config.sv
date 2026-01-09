@@ -9,9 +9,9 @@
 // 
 // Copyright (c) <Year> Scaledge Technology Pvt. All rights reserved.
 // 
-// This file is part of the VIP project.
+// This file is part of the project.
 // Description:
-//   Configuration object for DDR3 VIP components.
+//   Configuration object for DDR3 components.
 //   This class holds DDR3 device parameters, JEDEC-defined timing values,
 //   feature enable switches, and derived timing calculations.
 //   All timing comments are aligned with DDR3-800 JEDEC specification.
@@ -43,22 +43,13 @@ class ddr_config extends uvm_object;
   // description : Defines DDR3 physical organization
   //////////////////////////////////////////////////////////////////////////
 
-  // Device data width (JEDEC x4/x8/x16)
-  typedef enum bit[1:0]{x4,x8,x16} device_type; 
-
-  // Device density as per DDR3 SDRAM part sizes
-  typedef enum bit[2:0]{mb512,gb1,gb2,gb4,gb8} device_size; 
-
-  // DDR3 speed grade selection (800D / 800E)
-  typedef enum bit{ddr3_800d,ddr3_800e} device_frequency; 
-
   // Selected DDR3 configuration
   device_type device;        // JEDEC device width
   device_frequency freq;     // DDR3 speed bin
   device_size siz;           // DDR3 density
 
   //////////////////////////////////////////////////////////////////////////
-  // VIP Feature Enable Controls
+  // Feature Enable Controls
   // description : Enables/disables verification features
   //////////////////////////////////////////////////////////////////////////
 
@@ -259,7 +250,7 @@ function ddr_config::new(string name ="ddr_config");
   siz = gb4;               // Default device size (4Gb)
   freq = ddr3_800d;        // Default frequency (DDR3-800D)
 
-  // Enable VIP features by default
+  // Enable features by default
   enable_coverage = 1;
   enable_checkers = 1;
   enable_assertions = 1;

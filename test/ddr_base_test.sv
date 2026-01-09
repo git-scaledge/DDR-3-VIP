@@ -9,7 +9,7 @@
 // 
 // Copyright (c) <Year> Scaledge Technology Pvt. All rights reserved.
 // 
-// This file is part of the  VIP project.
+// This file is part of the  project.
 // Description:
 // Dependencies:
 // Notes:
@@ -76,7 +76,7 @@ function void ddr_base_test::build_phase(uvm_phase phase);
   
   ddr_env_h = ddr_env::type_id::create("ddr_env_h",this);
   ddr_config_h = ddr_config::type_id::create("ddr_config_h");
-  ddr_base_seq_h = ddr_base_sequence::type_id::create("ddr_base_seq");
+  ddr_base_seq_h = ddr_base_sequence::type_id::create("ddr_base_seq_h");
 
   uvm_config_db#(ddr_config)::set(this, "*", "ddr_config_h", ddr_config_h);
   ddr_config_h.randomize();

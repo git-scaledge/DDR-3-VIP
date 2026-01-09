@@ -9,14 +9,14 @@
 // 
 // Copyright (c) <Year> Scaledge Technology Pvt. All rights reserved.
 // 
-// This file is part of the  VIP project.
+// This file is part of the  project.
 // Description:
 // Dependencies:
 // Notes:
 //////////////////////////////////////////////////////////////////////////////////
 `ifndef DDR_BASE_SEQUENCE_SV
 `define DDR_BASE_SEQUENCE_SV
-class ddr_base_sequence extends uvm_sequence;
+class ddr_base_sequence extends uvm_sequence#(ddr_seq_item);
  
   `uvm_object_utils(ddr_base_sequence)
   
@@ -26,7 +26,7 @@ class ddr_base_sequence extends uvm_sequence;
     
 endclass
     
-    function ddr_base_sequence::new(string name ="ddr_base_sequence");
+  function ddr_base_sequence::new(string name ="ddr_base_sequence");
     super.new(name);
   endfunction
   
