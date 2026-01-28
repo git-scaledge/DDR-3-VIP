@@ -94,7 +94,7 @@ class ddr_config extends uvm_object;
   int tcpded; // Command pass disable delay
   int tpd;    // Power-down entry timing
   int tactpden; // ACT to power-down entry
-  int tprpden;  // PRE to power-down entry
+  int tprepden;  // PRE to power-down entry
   int trdpden;  // READ to power-down entry
   int trefpden; // REF to power-down entry
   int tmrspden; // MRS to power-down entry
@@ -333,12 +333,12 @@ function ddr_config::new(string name ="ddr_config");
   end
 
   tactpden = 1;
-  tprpden = 1;
+  tprepden = 1;
   trdpden = trl+4+1;
 
-  wrpden_bl8otf_bl8mrs_bc4_otf = twl+4+(twr/(`TIMEPERIOD));
+  wrpden_bl8otf_bl8mrs_bc4_otf = twl+4+twr;
   wrapden_bl8otf_bl8mrs_bc4_otf = twl+4+twr+1;
-  wrpden_bc4_mrs = twl+2+(twr/(`TIMEPERIOD));
+  wrpden_bc4_mrs = twl+2+twr;
   wrapden_bc4_mrs = twl+2+twr+1;
 
   trefpden = 1;
@@ -357,7 +357,7 @@ function ddr_config::new(string name ="ddr_config");
   thz = 0.4; //ns
   tdss = 0.2 *(`TIMEPERIOD);
   tdsh = 0.2 *(`TIMEPERIOD);
-  tdqsq = 0.2;//ns
+  tdqsq = 0.2;//ns //TODO
   tds_base = 0.075;//ns
   tdipw = 0.6; //ns
   tdllk = 512 ; 
