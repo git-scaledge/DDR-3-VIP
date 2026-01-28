@@ -17,6 +17,24 @@
 
 module ddr_assertion(ddr_interface inf);
 
+property dqsck_assertion;
+  realtime dqs_pos;
+  @(posedge inf.ck_t)
+  ($rose(inf.dqs_t),dqs_pos = $realtime) |-> @(negedge inf.ck_c) ((($realtime - (`TIMEPERIOD/2) - dqs_pos) >= -400ps) && (($realtime - (`TIMEPERIOD/2) - dqs_pos) <= 400ps));
+endproperty
+
+assert property(dqsck_assertion);
+
+/*property dqsq_assertion;
+  realtime edge_t;
+	@(posedge inf.dqs_t or posedge inf.dqs_c)
+	(1, edge_t = $realtime) |-> 
+	if(!$isunknown(inf.dq)) 
+	  (($realtime - edge_t >= 0) && ($realtime - edge_t <= 200)) ;
+endproperty
+
+assert property(dqsq_assertion);*/
+
 endmodule
 
 `endif
