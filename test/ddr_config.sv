@@ -9,9 +9,9 @@
 // 
 // Copyright (c) <Year> Scaledge Technology Pvt. All rights reserved.
 // 
-// This file is part of the VIP project.
+// This file is part of the project.
 // Description:
-//   Configuration object for DDR3 VIP components.
+//   Configuration object for DDR3 components.
 //   This class holds DDR3 device parameters, JEDEC-defined timing values,
 //   feature enable switches, and derived timing calculations.
 //   All timing comments are aligned with DDR3-800 JEDEC specification.
@@ -43,22 +43,13 @@ class ddr_config extends uvm_object;
   // description : Defines DDR3 physical organization
   //////////////////////////////////////////////////////////////////////////
 
-  // Device data width (JEDEC x4/x8/x16)
-  typedef enum bit[1:0]{x4,x8,x16} device_type; 
-
-  // Device density as per DDR3 SDRAM part sizes
-  typedef enum bit[2:0]{mb512,gb1,gb2,gb4,gb8} device_size; 
-
-  // DDR3 speed grade selection (800D / 800E)
-  typedef enum bit{ddr3_800d,ddr3_800e} device_frequency; 
-
   // Selected DDR3 configuration
   device_type device;        // JEDEC device width
   device_frequency freq;     // DDR3 speed bin
   device_size siz;           // DDR3 density
 
   //////////////////////////////////////////////////////////////////////////
-  // VIP Feature Enable Controls
+  // Feature Enable Controls
   // description : Enables/disables verification features
   //////////////////////////////////////////////////////////////////////////
 
@@ -103,7 +94,7 @@ class ddr_config extends uvm_object;
   int tcpded; // Command pass disable delay
   int tpd;    // Power-down entry timing
   int tactpden; // ACT to power-down entry
-  int tprpden;  // PRE to power-down entry
+  int tprepden;  // PRE to power-down entry
   int trdpden;  // READ to power-down entry
   int trefpden; // REF to power-down entry
   int tmrspden; // MRS to power-down entry
@@ -259,7 +250,7 @@ function ddr_config::new(string name ="ddr_config");
   siz = gb4;               // Default device size (4Gb)
   freq = ddr3_800d;        // Default frequency (DDR3-800D)
 
-  // Enable VIP features by default
+  // Enable features by default
   enable_coverage = 1;
   enable_checkers = 1;
   enable_assertions = 1;
@@ -342,12 +333,12 @@ function ddr_config::new(string name ="ddr_config");
   end
 
   tactpden = 1;
-  tprpden = 1;
+  tprepden = 1;
   trdpden = trl+4+1;
 
-  wrpden_bl8otf_bl8mrs_bc4_otf = twl+4+(twr/(`TIMEPERIOD));
+  wrpden_bl8otf_bl8mrs_bc4_otf = twl+4+twr;
   wrapden_bl8otf_bl8mrs_bc4_otf = twl+4+twr+1;
-  wrpden_bc4_mrs = twl+2+(twr/(`TIMEPERIOD));
+  wrpden_bc4_mrs = twl+2+twr;
   wrapden_bc4_mrs = twl+2+twr+1;
 
   trefpden = 1;
@@ -366,7 +357,7 @@ function ddr_config::new(string name ="ddr_config");
   thz = 0.4; //ns
   tdss = 0.2 *(`TIMEPERIOD);
   tdsh = 0.2 *(`TIMEPERIOD);
-  tdqsq = 0.2;//ns
+  tdqsq = 0.2;//ns //TODO
   tds_base = 0.075;//ns
   tdipw = 0.6; //ns
   tdllk = 512 ; 
