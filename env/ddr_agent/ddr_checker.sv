@@ -207,6 +207,41 @@ class ddr_checker extends uvm_component;
   // description   : Checker for read command to write command delay
 	//////////////////////////////////////////////////////////////////////////
 	extern function void read_command_to_write_command_delay_checker(ddr_seq_item req,bit [1:0] mr0_a1_a0);
+	//////////////////////////////////////////////////////////////////////////
+  // function name : write_command_to_read_command_delay_checker
+  // argument      : req, mr0[1:0]
+  // description   : Checker for write command to read command delay
+	//////////////////////////////////////////////////////////////////////////
+	extern function void write_command_to_read_command_delay_checker(ddr_seq_item req,bit [1:0] mr0_a1_a0, input logic [`MEM_DQ_WIDTH-1:0] dq);
+
+	//////////////////////////////////////////////////////////////////////////
+  // function name : write_command_to_precharge_command_delay_checker
+  // argument      : req, mr0[1:0]
+  // description   : Checker for write command to precharge command delay
+	//////////////////////////////////////////////////////////////////////////
+	extern function void write_command_to_precharge_command_delay_checker(ddr_seq_item req,bit [1:0] mr0_a1_a0, input logic [`MEM_DQ_WIDTH-1:0] dq);
+
+	//////////////////////////////////////////////////////////////////////////
+  // function name : ref_to_any_command_delay_checker
+  // argument      : req, mr0[1:0]
+  // description   : Checker for ref command to any command delay
+	//////////////////////////////////////////////////////////////////////////
+	extern function void ref_to_any_command_delay_checker(ddr_seq_item req);
+
+	//////////////////////////////////////////////////////////////////////////
+  // function name : ref_to_any_command_delay_checker
+  // argument      : req, mr0[1:0]
+  // description   : Checker for ref command to ref command delay
+	//////////////////////////////////////////////////////////////////////////
+	extern function void ref_to_ref_command_delay_checker(ddr_seq_item req);
+
+	//////////////////////////////////////////////////////////////////////////
+  // function name : self_refresh_exit_delay_checker
+  // argument      : req, mr0[1:0]
+  // description   : Checker for self refresh exit delay
+	//////////////////////////////////////////////////////////////////////////
+	extern function void self_refresh_exit_delay_checker(ddr_seq_item req,bit dll_on_off);
+
 endclass
     
 function ddr_checker::new(string name ="ddr_checker",uvm_component parent=null);
@@ -767,4 +802,121 @@ static bit rdt_flag;
 	  
 endfunction
 
+function void ddr_checker::write_command_to_read_command_delay_checker(ddr_seq_item req,bit [1:0] mr0_a1_a0, input logic [`MEM_DQ_WIDTH-1:0] dq);
+
+static time current_time, prev_time;
+static bit wtr_flag;
+
+  
+  if(((dq != 'bz) || (dq != 'bx))) begin
+		  prev_time = $time;
+			wtr_flag = 1'b1;
+	end
+    if((req.cmd == RD || req.cmd == RDS4 || req.cmd == RDS8) && wtr_flag == 1'b1) begin
+		  current_time = $time;
+		  if(mr0_a1_a0 == 2'b10) begin
+		    if((current_time - prev_time) -2 != (config_h.twtr) * `TIMEPERIOD)
+			    `uvm_error(get_type_name(),$sformatf("[WRITE COMMAND TO READ COMMAND DELAY CHECKER] delay is %0d instead of %0d",(current_time - prev_time)-2,config_h.twtr * `TIMEPERIOD))
+
+      end
+      else begin
+        if((current_time - prev_time)-4 != (config_h.twtr) * `TIMEPERIOD)
+			    `uvm_error(get_type_name(),$sformatf("[WRITE COMMAND TO READ COMMAND DELAY CHECKER] delay is %0d instead of %0d",(current_time - prev_time)-4,config_h.twtr * `TIMEPERIOD)) 
+      end
+      wtr_flag = 1'b0;
+		end
+	  
+endfunction
+
+function void ddr_checker::write_command_to_precharge_command_delay_checker(ddr_seq_item req,bit [1:0] mr0_a1_a0, input logic [`MEM_DQ_WIDTH-1:0] dq);
+
+static time current_time, prev_time;
+static bit wp_flag;
+
+  
+  if(((dq != 'bz) || (dq != 'bx))) begin
+		  prev_time = $time;
+			wp_flag = 1'b1;
+	end
+    if(req.cmd == PRE && wp_flag == 1'b1) begin
+		  current_time = $time;
+		  if(mr0_a1_a0 == 2'b10) begin
+		    if((current_time - prev_time) -2 != (config_h.twr) * `TIMEPERIOD)
+			    `uvm_error(get_type_name(),$sformatf("[WRITE COMMAND TO PRECHARGE COMMAND DELAY CHECKER] delay is %0d instead of %0d",(current_time - prev_time)-2,config_h.twr * `TIMEPERIOD))
+      end
+      else begin
+        if((current_time - prev_time)-4 != (config_h.twr) * `TIMEPERIOD)
+			    `uvm_error(get_type_name(),$sformatf("[WRITE COMMAND TO PRECHARGE COMMAND DELAY CHECKER] delay is %0d instead of %0d",(current_time - prev_time)-4,config_h.twr * `TIMEPERIOD)) 
+      end
+      wp_flag = 1'b0;
+		end
+	  
+endfunction
+
+function void ddr_checker::ref_to_any_command_delay_checker(ddr_seq_item req);
+
+static time current_time, prev_time;
+static bit ref_flag;
+
+  if(req.cmd == REF || req.cmd == DES || req.cmd == NOP) begin
+	  if(req.cmd == REF) begin
+	    prev_time = $time;
+	    ref_flag = 1'b1;
+		end
+	end
+	else if(ref_flag == 1'b1) begin
+	  current_time = $time;
+		if((current_time - prev_time) != config_h.trfc * `TIMEPERIOD)
+			`uvm_error(get_type_name(),$sformatf("[REFRESH TO ANY COMMAND DELAY CHECKER] tMOD is %0d instead of %0d",(current_time - prev_time),config_h.trfc * `TIMEPERIOD))
+		ref_flag = 1'b0;
+	end
+
+endfunction
+
+function void ddr_checker::ref_to_ref_command_delay_checker(ddr_seq_item req);
+
+static time current_time, prev_time;
+static bit refi_flag;
+
+  if(req.cmd == MRS || req.cmd == DES || req.cmd == NOP) begin
+	  if(req.cmd == MRS) begin
+	    current_time = $time;
+	    if(refi_flag == 1'b1) begin
+		    if((current_time - prev_time) != config_h.trefi * `TIMEPERIOD)
+			    `uvm_error(get_type_name(),$sformatf("[REFRESH TO REFRESH DELAY CHECKER] tMRD is %0d instead of %0d",(current_time - prev_time),config_h.trefi * `TIMEPERIOD))
+		  end
+	    prev_time = $time;
+	    refi_flag = 1'b1;
+		end
+	end
+	else
+	   refi_flag = 1'b0;
+
+endfunction
+
+function void ddr_checker::self_refresh_exit_delay_checker(ddr_seq_item req, bit dll_on_off);
+
+static time current_time, prev_time;
+static bit sre_flag;
+
+  if(req.cmd == PDX || req.cmd == DES || req.cmd == NOP) begin
+	  if(req.cmd == PDX) begin
+		  sre_flag = 1'b1;
+	  	prev_time = $time;
+	  end
+	end
+	else if(sre_flag == 1'b1) begin
+	    current_time = $time;
+			if(dll_on_off) begin
+		    if((current_time - prev_time) != config_h.txsdll * `TIMEPERIOD)
+			    `uvm_error(get_type_name(),$sformatf("[SELF REFRESH EXIT DELAY CHECKER] tXPDLL is %0d instead of %0d",(current_time - prev_time),config_h.txsdll * `TIMEPERIOD))
+			end
+			else begin
+		    if((current_time - prev_time) != config_h.txs * `TIMEPERIOD)
+			    `uvm_error(get_type_name(),$sformatf("SELF REFRESH EXIT DELAY CHECKER] tXP is %0d instead of %0d",(current_time - prev_time),config_h.txs * `TIMEPERIOD))
+			end
+	    sre_flag = 1'b0;
+	end
+	  
+endfunction
 `endif
