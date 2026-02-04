@@ -64,7 +64,7 @@ class ddr_driver extends uvm_driver#(ddr_seq_item);
   // mode_register_set task: 
   // Drives a single DDR transaction onto the DUT interface
   // based on the received sequence item
-  extern task mode_register_set( bit [`MEM_BA_WIDTH-1:0] ba,bit [`MEM_ROW_WIDTH-1:0] a);
+  extern task mode_register_set( bit cs_n,bit ras_n,bit cas_n,bit we_n,bit [`MEM_BA_WIDTH-1:0] ba,bit [`MEM_ROW_WIDTH-1:0] a);
 
   // mode_register_set task: 
   // Drives a single DDR transaction onto the DUT interface
@@ -74,6 +74,7 @@ class ddr_driver extends uvm_driver#(ddr_seq_item);
   extern task wait_for_reset_deassert();
   extern task command(ddr_seq_item req);
   extern task reset_Initialization();
+ // extern task dqs_generation(ddr_seq_item req);
 
   bit [`MEM_ROW_WIDTH-1:0] MR0;
 endclass
@@ -120,9 +121,9 @@ endclass
     forever begin
       seq_item_port.get_next_item(req);
       $cast(rsp,req.clone());
-      send_to_dut(rsp);
       rsp.set_name($sformatf("DRIVER: RECEIVED PKT FROM SEQS", $time));
       rsp.print();
+      send_to_dut(rsp);
       seq_item_port.item_done();
     end
     endtask 
@@ -148,20 +149,24 @@ endclass
     vif.cke<=1;
     @(vif.ddr_drv_cb);
     // wait (ddr_config_h.txpr);
-    mode_register_set(2,13'b0000000000000);
-    mode_register_set(3,13'b0000000000000);
-    mode_register_set(1,13'b0000000000001);
-    mode_register_set(0,13'b0001000010000);
+    mode_register_set(0,0,0,0,2,13'b0000000000000);
+    mode_register_set(0,0,0,0,3,13'b0000000000000);
+    mode_register_set(0,0,0,0,1,13'b0000000000001);
+    mode_register_set(0,0,0,0,0,13'b0001000010000);
    endtask
 
    task ddr_driver::send_to_dut(ddr_seq_item req);
        command(req);
    endtask
 
-   task ddr_driver::mode_register_set( bit [`MEM_BA_WIDTH-1:0] ba,bit [`MEM_ROW_WIDTH-1:0] a);
+   task ddr_driver::mode_register_set(bit cs_n,bit ras_n,bit cas_n,bit we_n, bit [`MEM_BA_WIDTH-1:0] ba,bit [`MEM_ROW_WIDTH-1:0] a);
       @(vif.ddr_drv_cb);
-      vif.ddr_drv_cb.ba <= ba;
-      vif.ddr_drv_cb.a<=a;
+    vif.ddr_drv_cb.cs_n  <= cs_n;
+    vif.ddr_drv_cb.ras_n <= ras_n;
+    vif.ddr_drv_cb.cas_n <= cas_n;
+    vif.ddr_drv_cb.we_n  <= we_n;
+    vif.ddr_drv_cb.ba <= ba;
+    vif.ddr_drv_cb.a<=a;
       if(ba == 0) MR0 = a;
    endtask
 
@@ -174,8 +179,30 @@ endclass
   vif.ddr_drv_cb.ba    <= ba;
   vif.ddr_drv_cb.a     <= a;
   endtask
-  
+ 
+ /*
+ task ddr_driver::dqs_generation(ddr_seq_item req);
+  fork
+  begin:Thread_1
+  if(req.cmd ==WR)begin
+    @(posedge vif.ck_t);
+    vif.dqs_t=~vif.dqs_t;
+    end
+  else 
+  vif.dqs_t<=0;
+  end:Thread_1
 
+  begin:Thread_2
+   repeat(ddr_config_h.twl) @(vif.ddr_drv_cb);
+         repeat(req.dq_q.size())begin
+           @(posedge vif.dqs_t or negedge vif.dqs_t);
+            vif.ddr_drv_cb.dq<=req.dq_q.pop_front();
+          end
+
+  end:Thread_2
+  join
+ endtask
+*/
 
 task ddr_driver::command(ddr_seq_item req);
   case (req.cmd)
@@ -298,11 +325,28 @@ task ddr_driver::command(ddr_seq_item req);
           end
       end
 
-        repeat(ddr_config_h.twl) @(vif.ddr_drv_cb);
-          for(int i =0 ;i<req.dq_q.size()-1;i++)begin
-            vif.ddr_drv_cb.dq<=req.dq_q.pop_front();
-            @(edge vif.ck_t);
-          end
+     // dqs_generation(req);
+vif.dqs_t<=0;
+        
+        forever begin
+          repeat(ddr_config_h.twl) @(posedge vif.ck_t);
+            for(int i=0;i<=req.dq_q.size();i++)begin
+              begin
+              @(posedge vif.ck_t);
+              vif.ddr_drv_cb.dqs_t<=1;
+              vif.ddr_drv_cb.dq<=req.dq_q[i];
+              end
+              begin
+              @(posedge vif.ck_c);
+              vif.ddr_drv_cb.dqs_t<=0;
+              vif.ddr_drv_cb.dq<=req.dq_q[i+1];
+              end 
+               i++;
+                $display("D3 value of i %d",i);
+
+            end
+            break;
+        end
   end//WR
 
   RD :begin
@@ -501,6 +545,26 @@ task ddr_driver::command(ddr_seq_item req);
         repeat(ddr_config_h.tpd) @(vif.ddr_drv_cb);
         drive_cmd(1,'bx,'bx,'bx, req.ba, req.a);
       end
+
+      end
+
+  PRE :begin
+      //-------------------------------
+      // Previous was WR (twr)
+      //-------------------------------
+     if (prev_cmd == WR) begin
+        repeat(ddr_config_h.twr) @(vif.ddr_drv_cb);
+        drive_cmd(0,0,1,0, req.ba, req.a);
+      end
+
+      //-------------------------------
+      // Previous was RD (trtp)
+      //-------------------------------
+     if (prev_cmd == RD) begin
+        repeat(ddr_config_h.trtp) @(vif.ddr_drv_cb);
+        drive_cmd(0,0,1,0, req.ba, req.a);
+      end
+
 
       end
   endcase
