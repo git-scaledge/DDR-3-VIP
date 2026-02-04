@@ -63,7 +63,7 @@ interface ddr_interface(input logic ck_t, input logic reset_n);
   // Driver clocking block
   // Used by driver to drive outputs and sample inputs
   //////////////////////////////////////////////////////////////////////////
-  clocking ddr_drv_cb @(posedge ck_t);
+  clocking ddr_drv_cb @(posedge ck_t or posedge ck_c);
     default input #1 output #1;
     
     // Output signals driven by the driver
@@ -76,7 +76,7 @@ interface ddr_interface(input logic ck_t, input logic reset_n);
   // Monitor clocking block
   // Used by monitor to sample DUT signals
   //////////////////////////////////////////////////////////////////////////
-  clocking ddr_mon_cb @(posedge ck_t);
+  clocking ddr_mon_cb @(posedge ck_t or posedge ck_c);
     default input #1 output #0;
     
     // Input signals sampled by monitor
