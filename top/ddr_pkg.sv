@@ -32,6 +32,7 @@ import uvm_pkg::*;
 `include "ddr_monitor.sv"
 `include "ddr_sequencer.sv"
 `include "ddr_agent.sv"
+`include "ddr_wrapper_cov_class.sv"
 `include "ddr_coverage_collcetor.sv"
 `include "ddr_scoreboard.sv"
 `include "ddr_refrence_model.sv"
