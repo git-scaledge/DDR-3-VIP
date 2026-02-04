@@ -131,7 +131,11 @@ endclass
         trans_command_select();
         write_read_data();
         // Publish the monitored transaction
-        ddr_mon_analysis_port.write(req);
+        if(!(req.cmd == DES || req.cmd == NOP)) begin
+          req.set_name($sformatf("MONITOR: RECEIVED PKT FROM INF", $time));
+          req.print();
+          ddr_mon_analysis_port.write(req);
+        end
       end  
     endtask
    
@@ -172,6 +176,7 @@ endclass
     endtask
 
     task ddr_monitor::write_read_data();
+      bl = otf == 2'b01 ? 8:4; 
       for(int i=0;i<bl;i++) begin
         req.dq_q.push_back(vif.ddr_mon_cb.dq);
         @(posedge vif.ck_t or posedge vif.ck_c);
