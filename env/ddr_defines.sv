@@ -35,6 +35,7 @@ typedef enum bit{ddr3_800d,ddr3_800e} device_frequency;
 
 //DDR3 commands
 typedef enum {    
+  DES,    // Device Deselected
   MRS,    // Mode Register Set
   REF,    // Refresh
   SRE,    // Self Refresh Entry
@@ -60,7 +61,6 @@ typedef enum {
   RDAS8,  // Read with Auto Precharge (BL8, on-the-fly)
 
   NOP,    // No Operation
-  DES,    // Device Deselected
 
   PDE,    // Power Down Entry
   PDX,    // Power Down Exit
